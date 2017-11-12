@@ -1,8 +1,0 @@
-﻿  main.cpp
-d:\0_system\opencv\ide\opencv\mybuild\install\include\opencv2\core\mat.hpp(2586): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-d:\0_system\opencv\ide\opencv\mybuild\install\include\opencv2\core\persistence.hpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-d:\0_system\opencv\ide\opencv\mybuild\install\include\opencv2\core\utility.hpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-d:\0_system\opencv\ide\opencv\mybuild\install\include\opencv2\core\utility.hpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-d:\0_system\opencv\ide\opencv\mybuild\install\include\opencv2\imgproc.hpp(592): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-  PeopleAndVehicleDetevtionTracking.vcxproj -> D:\0_System\Opencv\workplace\team_work\PeopleAndVehicleDetevtionTracking\x64\Debug\PeopleAndVehicleDetevtionTracking.exe
-  PeopleAndVehicleDetevtionTracking.vcxproj -> D:\0_System\Opencv\workplace\team_work\PeopleAndVehicleDetevtionTracking\x64\Debug\PeopleAndVehicleDetevtionTracking.pdb (Partial PDB)
