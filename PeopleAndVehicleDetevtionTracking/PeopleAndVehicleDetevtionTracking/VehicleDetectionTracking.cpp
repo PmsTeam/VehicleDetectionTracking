@@ -1,7 +1,8 @@
 #include "VehicleDetectionTracking.h"
 
 //Mat imgCar;
-vector<double> frameTime;//视频帧当前时间
+//vector<double> frameTime;//视频帧当前时间
+extern double accSpeed;
 
 void vehicleDetectionTracking(const string sourcePath, const string outputPath)
 {
@@ -22,12 +23,20 @@ void vehicleDetectionTracking(const string sourcePath, const string outputPath)
 
 	//打开输出视频
 	VideoWriter writeVideo;
-	writeVideo.open(outputPath, // 输出视频文件名
+	writeVideo.open(outputPath, // 输出视频路径
 		(int)capVideo.get(CV_FOURCC_PROMPT), // 也可设为CV_FOURCC_PROMPT，在运行时选取
 		(double)capVideo.get(CV_CAP_PROP_FPS), // 视频帧率
 		Size((int)capVideo.get(CV_CAP_PROP_FRAME_WIDTH), 
 		(int)capVideo.get(CV_CAP_PROP_FRAME_HEIGHT)), // 视频大小
 		true); // 是否输出彩色视频
+
+	//定义文件输出流 
+	ofstream oFile;//输出csv专用
+	ofstream outfile("./cache/out-car.txt");//缓存给后台调用
+
+	//打开要输出的文件 
+	oFile.open("./cache//Digest-Car.csv", ios::out | ios::trunc);
+	oFile << "当前视频时间" << "," << "累计通过车辆总数" << "," << "1s内通过车辆总数" << "," << "车辆通过平均速率" << endl;
 
 	//读取连续的两帧
 	Mat imgFrame1;
@@ -49,34 +58,44 @@ void vehicleDetectionTracking(const string sourcePath, const string outputPath)
 	int carCount = 0;
 	int carDCount = 0;
 
-	//int frame_count = capVideo.get(CV_CAP_PROP_FRAME_COUNT);//984
-	//fps = capVideo.get(CV_CAP_PROP_FPS);
-
 	vector<Blob> blobs;
 
-	int out = 0;//每30帧输出一次这段时间内通过的车数
-	ofstream outfile("./cache/outtest.txt");
+	int out = 0;
 	while (capVideo.isOpened() && chCheckForEscKey != 27)
 	{
 		//获取当前帧的距离视频开始的时间位置（ms）
 		//frameTime.push_back(capVideo.get(CV_CAP_PROP_POS_MSEC));
 
+		//每30帧输出一次这段时间内通过的车数
 		if (out++ == 30)
 		{
 			carDCount = carCount - carDCount;
+			string currentTime = to_string(capVideo.get(CV_CAP_PROP_POS_MSEC) / 1000);
+			string subCurrentTime = currentTime.substr(0, currentTime.size() - 5) + "秒";
+			string avgSpeed;
+			if (carDCount != 0)
+				avgSpeed = to_string(accSpeed / carDCount);
+			else 
+				avgSpeed = to_string(0);
+			string subAvgSpeed = avgSpeed.substr(0, avgSpeed.size() - 5) + "km/h";
 
-			outfile << "总车数：";
+			//结合当前时间，写出到流量报告
+			oFile << subCurrentTime << "," << carCount << "," << carDCount << "," << subAvgSpeed << endl;
+			outfile << "REAL-TIME：";
+			outfile << subCurrentTime;
+			outfile << "    ";
+			outfile << "TOTLE-CAR：";
 			outfile << carCount;
 			outfile << "    ";
-			outfile << "实时时间: ";
-			outfile << capVideo.get(CV_CAP_PROP_POS_MSEC) / 1000;
+			outfile << "REAL_CAR：";
+			outfile << carDCount;
 			outfile << "    ";
-			outfile << "实时车数目: ";
-			outfile << carDCount << endl;
+			outfile << "SPEED：";
+			outfile << subAvgSpeed << endl;
 
 			carDCount = carCount;
+			accSpeed = 0;
 			out = 0;
-			//结合当前时间，写出到流量报告
 		}
 
 		Mat imgFrame1Copy = imgFrame1.clone();
@@ -90,10 +109,15 @@ void vehicleDetectionTracking(const string sourcePath, const string outputPath)
 		GaussianBlur(imgFrame1Copy, imgFrame1Copy, Size(5, 5), 0);
 		GaussianBlur(imgFrame2Copy, imgFrame2Copy, Size(5, 5), 0);
 		absdiff(imgFrame1Copy, imgFrame2Copy, imgDifference);
+		//imshow("背景减除所得图像", imgDifference);
 		
 		//获得二值化图像
 		threshold(imgDifference, imgThresh, 30, 255.0, CV_THRESH_BINARY);
-		imshow("imgThresh", imgThresh);
+		//imshow("图像二值化处理", imgThresh);
+
+		//直方图均衡化增强图像对比度
+		//equalizeHist(imgThresh, imgThresh);
+		//imshow("直方图均衡化处理", imgThresh);
 
 		//获取常用的结构元素的形状
 		Mat structuringElement3x3 = getStructuringElement(MORPH_RECT, Size(3, 3));
@@ -107,6 +131,7 @@ void vehicleDetectionTracking(const string sourcePath, const string outputPath)
 			dilate(imgThresh, imgThresh, structuringElement5x5);
 			dilate(imgThresh, imgThresh, structuringElement5x5);
 			erode(imgThresh, imgThresh, structuringElement5x5);
+			//erode(imgThresh, imgThresh, structuringElement5x5);
 		}
 
 		Mat imgThreshCopy = imgThresh.clone();
@@ -153,7 +178,7 @@ void vehicleDetectionTracking(const string sourcePath, const string outputPath)
 		else
 			line(imgFrame2Copy, crossingLine[0], crossingLine[1], SCALAR_RED, 2);
 		drawCarCountOnImage(carCount, imgFrame2Copy);
-		imshow("imgFrame2Copy", imgFrame2Copy);
+		imshow("检测结果", imgFrame2Copy);
 
 		//imgCar = imgFrame2Copy.clone();
 		writeVideo << imgFrame2Copy;

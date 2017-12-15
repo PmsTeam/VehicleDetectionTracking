@@ -121,6 +121,31 @@ void Blob::judgePeople(Blob &possibleBlob)
 		possibleBlob.blnIsPeople = true;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void Blob::DjudgeVehicle(Blob &possibleBlob)
+{
+	if (possibleBlob.currentBoundingRect.area() > 7000 &&
+		possibleBlob.dblCurrentAspectRatio > 1.5 &&
+		possibleBlob.dblCurrentAspectRatio < 3.0 &&
+		possibleBlob.currentBoundingRect.width > 95 &&
+		possibleBlob.currentBoundingRect.height > 50 &&
+		possibleBlob.dblCurrentDiagonalSize > 95 &&
+		(contourArea(possibleBlob.currentContour) / (double)possibleBlob.currentBoundingRect.area()) > 0.30)
+		possibleBlob.blnIsVehicle = true;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void Blob::DjudgePeople(Blob &possibleBlob)
+{
+	if (possibleBlob.currentBoundingRect.area() > 1000 &&
+		possibleBlob.dblCurrentAspectRatio > 0.30 && possibleBlob.dblCurrentAspectRatio < 0.70 &&
+		possibleBlob.currentBoundingRect.width > 20 &&
+		possibleBlob.currentBoundingRect.height > 55 &&
+		possibleBlob.dblCurrentDiagonalSize > 55 &&
+		(contourArea(possibleBlob.currentContour) / (double)possibleBlob.currentBoundingRect.area()) > 0.30)
+		possibleBlob.blnIsPeople = true;
+}
+
 
 /*------------------------------Beta新增--------------------------------*/
 
@@ -128,25 +153,24 @@ void Blob::judgePeople(Blob &possibleBlob)
 void Blob::evaluateSpeed()
 {
 	int i = centerPositions.size();//质心数量
-	//int j = currentTime.size();//时间戳数量
-	if (blnStillBeingTracked == true && i >= 2 /*&& j >= 2*/)
+	if (blnStillBeingTracked == true && i >= 2)
 	{
 		//获得位移量
-		double dx = centerPositions[i - 1].x - centerPositions[i - 2].x;
-		double dy = centerPositions[i - 1].y - centerPositions[i - 2].y;
-		double ds = sqrt(dx*dx + dy*dy) * 16.86;
+		//double dx = centerPositions[i - 1].x - centerPositions[i - 2].x;
+		//double dy = centerPositions[i - 1].y - centerPositions[i - 2].y;
+		//double ds = sqrt(dx*dx + dy*dy) * 16.86;
+		//double dt = 33.3667;
+		double x1 = centerPositions[i - 1].x;
+		double x2 = centerPositions[i - 2].x;
+		double dx = x1 - x2;
+		double y1 = centerPositions[i - 1].y;
+		double y2 = centerPositions[i - 2].y;
+		double dy = y1 - y2;
+
+		double ds = sqrt(dx*dx + dy*dy) * 350.00 * ((720 - y1) / 720) * ((720 - y1) / 720);//./CarsDrivingUnderBridge.mp4
+		//double ds = sqrt(dx*dx + dy*dy) * 69.40;//./DSC_0068.mp4
+
 		double dt = 33.3667;
-		//double dt = (currentTime[i - 1] - currentTime[i - 2]);
-		//double dt = 0.001;
-
 		dblCarSpeed = ds / dt;
-
-		/*cout << "dx = " << dx << endl;
-		cout << "dy = " << dy << endl;
-		cout << "sqrt(dx*dx + dy*dy) = " << sqrt(dx*dx + dy*dy) << endl;
-		cout << "ds = " << ds << endl;
-		cout << "dt = " << dt << endl;
-		cout << "dv = " << dblCarSpeed << endl;
-		cout << "**********************" << endl;*/
 	}
 }
